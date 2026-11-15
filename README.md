@@ -2,7 +2,8 @@
 
 A phone app for 86 Big Island dive sites (shore and boat). For each site it shows waves, swell, wind, tide, water temperature, current and weather alerts, and gives a Good / Caution / No-go call. It also has entry difficulty for today, a flying-after-diving planner, and site details: entry, exit, route, hazards, parking and emergency contacts.
 
-- **App:** https://moorejohnedward.github.io/Dive-Moore-Site-Guide/ (once GitHub Pages is on)
+- **App:** https://moorejohnedward.github.io/Dive-Moore-Site-Guide/
+- **Editor:** https://moorejohnedward.github.io/Dive-Moore-Site-Guide/editor.html
 - **Code:** https://github.com/moorejohnedward/Dive-Moore-Site-Guide
 
 ## What makes it an app
@@ -12,6 +13,22 @@ A phone app for 86 Big Island dive sites (shore and boat). For each site it show
 - **Never shows made-up conditions.** If the feeds can't be reached and there's no recent download, it says so. Example data only appears in test mode (`?demo=1` at the end of the address).
 - **County public access.** 27 sites are on the County of Hawaiʻi shoreline public access list and carry a **Public access** tag and filter. 12 of them were added from that list and are tagged **New** until they're checked in person. See `data/COUNTY-ACCESS.md`.
 
+## Phones and computers
+
+It's one app that runs on everything with a browser:
+
+- **iPhone / iPad (Safari):** open the link → Share → **Add to Home Screen**.
+- **Android (Chrome):** open the link → **Install app** (or menu → Add to Home screen).
+- **Windows / Mac (Chrome or Edge):** open the link → **Install app**, or the install icon in the address bar. It opens in its own window like a desktop program.
+
+## Editing sites (desktop)
+
+Open **editor.html** (the **Edit sites** link at the bottom of the app). Pick a site, change anything in the form, drag the pin on the satellite map to the real entry point, and press **Save to GitHub**. The live app updates in about a minute, and phones pick it up the next time they open.
+
+The first time, click **GitHub connection** and paste a fine-grained token that has *Contents: Read and write* on this repo only (the dialog walks you through it). The token stays in that browser on that computer. Without a token the editor is read-only, and **Download sites.js** gives you the file to commit by hand.
+
+Use **Needs confirming** to list the sites you still have to scout; untick **Needs confirming on site** once you've dived it.
+
 ## Files
 
 | Path | What it is |
@@ -20,13 +37,14 @@ A phone app for 86 Big Island dive sites (shore and boat). For each site it show
 | `css/app.css` | Look and layout |
 | `js/app.js` | The app: loads conditions, rates sites, draws every screen |
 | `js/install.js` | Offline support and the Install button |
-| `data/sites.js` | All dive sites, emergency contacts, tide stations and altitude routes. **Edit sites here.** |
+| `editor.html`, `js/editor.js`, `css/editor.css` | The desktop site editor |
+| `data/sites.js` | All dive sites (one per line), emergency contacts, tide stations and altitude routes. Edit with the editor or by hand. |
 | `data/COUNTY-ACCESS.md` | How the county access list was matched to dive sites |
 | `sw.js` | Service worker (offline) |
 | `manifest.webmanifest`, `icons/` | App name, colors and icons for installing |
 | `Dive Moore Conditions.hoppscotch.json` | The app's six API calls for Hoppscotch |
 
-After changing any file, bump `VERSION` in `sw.js` (for example `dm-v2`) so installed copies pick up the change.
+Site edits reach phones on their own. After changing the app's code (HTML, CSS, JS), bump `VERSION` in `sw.js` (for example `dm-v5`) so installed copies pick up the change.
 
 ## The APIs it uses
 

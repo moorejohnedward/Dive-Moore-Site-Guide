@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Site editor · Dive Moore Conditions</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+<header class="bar">
+  <div class="flag" aria-hidden="true"></div>
+  <h1>Site editor</h1>
+  <span id="status" class="status">Not connected</span>
+  <span class="grow"></span>
+  <a href="./" class="btn ghost">Open the app</a>
+  <button id="settingsBtn" class="btn ghost" type="button">GitHub connection</button>
+  <button id="downloadBtn" class="btn ghost" type="button">Download sites.js</button>
+  <button id="saveBtn" class="btn primary" type="button" disabled>Save to GitHub</button>
+</header>
+
+<div class="layout">
+  <aside class="side">
+    <input id="search" type="search" placeholder="Search sites" aria-label="Search sites">
+    <div class="filters">
+      <label><input type="checkbox" id="onlyVerify"> Needs confirming</label>
+      <label><input type="checkbox" id="onlyChanged"> Changed</label>
+    </div>
+    <div id="list" class="list" role="listbox" aria-label="Dive sites"></div>
+    <button id="addBtn" class="btn ghost wide" type="button">+ Add a site</button>
+  </aside>
+
+  <main id="form" class="form">
+    <p class="empty">Pick a site on the left to edit it.</p>
+  </main>
+</div>
+
+<dialog id="settings">
+  <form method="dialog" class="dlg">
+    <h2>GitHub connection</h2>
+    <p>The editor saves to <b>data/sites.js</b> in your repo. It needs a GitHub fine-grained token with <b>Contents: Read and write</b> on this one repo only. The token stays in this browser on this computer.</p>
+    <ol>
+      <li>On GitHub: Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.</li>
+      <li>Repository access: <b>Only select repositories</b> → Dive-Moore-Site-Guide.</li>
+      <li>Permissions → Repository → <b>Contents: Read and write</b>. Nothing else.</li>
+      <li>Copy the token and paste it below.</li>
+    </ol>
+    <label>Repository <input id="repo" value="moorejohnedward/Dive-Moore-Site-Guide"></label>
+    <label>Branch <input id="branch" value="main"></label>
+    <label>Token <input id="token" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+    <div class="row">
+      <button value="forget" class="btn ghost" type="submit">Forget token</button>
+      <span class="grow"></span>
+      <button value="cancel" class="btn ghost" type="submit">Cancel</button>
+      <button value="ok" class="btn primary" type="submit">Connect</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/editor.js"></script>
+</body>
+</html>
