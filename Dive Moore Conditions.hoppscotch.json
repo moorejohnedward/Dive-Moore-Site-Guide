@@ -358,6 +358,160 @@
           "contentType": null,
           "body": null
         }
+      },
+      {
+        "v": "1",
+        "name": "7 · Measured wind at Kawaihae (NOAA CO-OPS)",
+        "method": "GET",
+        "endpoint": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
+        "params": [
+          {
+            "key": "station",
+            "value": "1617433",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "product",
+            "value": "wind",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "date",
+            "value": "latest",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "units",
+            "value": "english",
+            "active": true,
+            "description": "knots"
+          },
+          {
+            "key": "time_zone",
+            "value": "lst_ldt",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "format",
+            "value": "json",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "application",
+            "value": "DiveMoore",
+            "active": true,
+            "description": ""
+          }
+        ],
+        "headers": [],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\npw.test(\"Has a reading\", () => {\n  pw.expect(pw.response.body.data.length > 0).toBe(true);\n});\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      },
+      {
+        "v": "1",
+        "name": "8 · Marine forecast, Big Island Leeward Waters (NOAA NWS)",
+        "method": "GET",
+        "endpoint": "https://api.weather.gov/zones/coastal/PHZ123/forecast",
+        "params": [],
+        "headers": [
+          {
+            "key": "Accept",
+            "value": "application/geo+json",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "User-Agent",
+            "value": "DiveMoore Conditions (divemoore.com)",
+            "active": true,
+            "description": "NWS asks every caller to identify itself"
+          }
+        ],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\npw.test(\"Has forecast periods\", () => {\n  pw.expect(pw.response.body.properties.periods.length > 0).toBe(true);\n});\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      },
+      {
+        "v": "1",
+        "name": "9a · NWS grid point for Two Step (step 1 of 2)",
+        "method": "GET",
+        "endpoint": "https://api.weather.gov/points/19.4223,-155.9138",
+        "params": [],
+        "headers": [
+          {
+            "key": "Accept",
+            "value": "application/geo+json",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "User-Agent",
+            "value": "DiveMoore Conditions (divemoore.com)",
+            "active": true,
+            "description": "NWS asks every caller to identify itself"
+          }
+        ],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\npw.test(\"Gives an hourly forecast link\", () => {\n  pw.expect(pw.response.body.properties.forecastHourly.startsWith(\"https://\")).toBe(true);\n});\n// Copy properties.forecastHourly from the response into request 9b\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      },
+      {
+        "v": "1",
+        "name": "9b · NWS hourly forecast (step 2: paste the forecastHourly link)",
+        "method": "GET",
+        "endpoint": "https://api.weather.gov/gridpoints/HFO/0,0/forecast/hourly",
+        "params": [],
+        "headers": [
+          {
+            "key": "Accept",
+            "value": "application/geo+json",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "User-Agent",
+            "value": "DiveMoore Conditions (divemoore.com)",
+            "active": true,
+            "description": "NWS asks every caller to identify itself"
+          }
+        ],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\n// windSpeed comes back in mph, e.g. \"10 mph\". The app converts to knots (x 0.869).\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
       }
     ]
   }

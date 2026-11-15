@@ -24,7 +24,7 @@ const WAVE_MODEL_NAMES = {ecmwf_wam025: "ECMWF WAM", ncep_gfswave025: "NOAA GFS-
 const WIND_MODELS = ["gfs_seamless", "ecmwf_ifs025", "icon_seamless"];
 const WIND_MODEL_NAMES = {gfs_seamless: "NOAA GFS", ecmwf_ifs025: "ECMWF IFS", icon_seamless: "DWD ICON"};
 
-const state = {cached: null, cond: {}, tides: {}, temps: {}, alerts: [], live: false, when: null, sources: {}, filter: store("dm-region") || "All", pub: store("dm-pub") === "1", q: "", kind: "All", easy: false, me: null, geoErr: "", dest: store("dm-dest") || "", gf: +(store("dm-gf") || 70), dives: null};
+const state = {cached: null, obsWind: {}, marine: {}, nws: {}, cond: {}, tides: {}, temps: {}, alerts: [], live: false, when: null, sources: {}, filter: store("dm-region") || "All", pub: store("dm-pub") === "1", q: "", kind: "All", easy: false, me: null, geoErr: "", dest: store("dm-dest") || "", gf: +(store("dm-gf") || 70), dives: null};
 
 async function getJSON(url, ms = 15000) {
   const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms);
@@ -123,8 +123,40 @@ async function loadTides() {
       const r = await getJSON(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=${st.id}&product=water_temperature&date=latest&units=english&time_zone=lst_ldt&format=json&application=DiveMoore`);
       const d = r.data?.[0]; if (d && d.v !== "") state.temps[key] = {f: +d.v, t: new Date(d.t.replace(" ", "T") + ":00-10:00"), name: st.name};
     } catch (err) {}
+    try { // measured wind at the harbor gauge (an observation, not a forecast)
+      const r = await getJSON(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=${st.id}&product=wind&date=latest&units=english&time_zone=lst_ldt&format=json&application=DiveMoore`);
+      const d = r.data?.[0]; if (d && d.s !== "") state.obsWind[key] = {kt: +d.s, dir: +d.d, gust: +d.g, t: new Date(d.t.replace(" ", "T") + ":00-10:00"), name: st.name};
+    } catch (err) {}
   }));
-  if (Object.keys(state.tides).length) state.sources.tides = "NOAA CO-OPS tide predictions & water temperature";
+  if (Object.keys(state.tides).length) state.sources.tides = "NOAA CO-OPS tides, water temperature and measured wind";
+}
+
+/* NOAA NWS coastal waters forecasts: the official marine forecast for each patch of water */
+const MARINE_ZONES = {PHZ121: "Alenuihaha Channel", PHZ122: "Big Island Windward Waters", PHZ123: "Big Island Leeward Waters", PHZ124: "Big Island Southeast Waters"};
+const zoneFor = s => s.marineZone || (s.side === "east" ? (s.region === "Puna" ? "PHZ124" : "PHZ122") : s.lat > 20.1 ? "PHZ121" : "PHZ123");
+async function loadMarine() {
+  await Promise.all(Object.keys(MARINE_ZONES).map(async z => {
+    try {
+      const r = await getJSON(`https://api.weather.gov/zones/coastal/${z}/forecast`);
+      const p = r.properties || {};
+      state.marine[z] = {updated: p.updated, periods: (p.periods || []).slice(0, 4).map(x => ({name: x.name, text: x.detailedForecast}))};
+    } catch (err) {}
+  }));
+  if (Object.keys(state.marine).length) state.sources.marine = "NOAA NWS coastal waters forecast";
+}
+/* NOAA NWS hourly forecast wind for one site, fetched when the site is opened */
+async function loadNws(s) {
+  if (state.nws[s.id] || !state.live) return;
+  state.nws[s.id] = {loading: true};
+  try {
+    const pt = await getJSON(`https://api.weather.gov/points/${s.lat.toFixed(4)},${s.lon.toFixed(4)}`);
+    const fc = await getJSON(pt.properties.forecastHourly);
+    const MPH2KT = 0.868976, dirs = {N: 0, NNE: 22.5, NE: 45, ENE: 67.5, E: 90, ESE: 112.5, SE: 135, SSE: 157.5, S: 180, SSW: 202.5, SW: 225, WSW: 247.5, W: 270, WNW: 292.5, NW: 315, NNW: 337.5};
+    const hrs = (fc.properties?.periods || []).slice(0, 24).map(x => ({t: new Date(x.startTime), kt: parseFloat(x.windSpeed) * MPH2KT, dir: dirs[x.windDirection] ?? null, short: x.shortForecast}));
+    state.nws[s.id] = {hrs};
+    state.sources.nws = "NOAA NWS hourly forecast";
+  } catch (err) { state.nws[s.id] = {err: true}; }
+  if (decodeURIComponent(location.hash.slice(1)) === s.id) render();
 }
 
 async function loadAlerts() {
@@ -136,7 +168,8 @@ async function loadAlerts() {
 
 async function loadAll() {
   $("#stamp").textContent = "Loading conditions…";
-  const results = await Promise.allSettled([loadWaves(), loadWind(), loadTides(), loadAlerts()]);
+  const results = await Promise.allSettled([loadWaves(), loadWind(), loadTides(), loadAlerts(), loadMarine()]);
+  state.nws = {};
   state.live = results[0].status === "fulfilled" || results[1].status === "fulfilled";
   state.cached = null; state.loaded = true;
   if (state.live) { state.when = new Date(); saveCache(); }
@@ -150,13 +183,14 @@ async function loadAll() {
 const DEMO = /[?&]demo=1/.test(location.search);
 const CACHE_KEY = "dm-last-conditions", CACHE_MAX_H = 36;
 function saveCache() {
-  store(CACHE_KEY, JSON.stringify({when: state.when, cond: state.cond, tides: state.tides, temps: state.temps, alerts: state.alerts, sources: state.sources}));
+  store(CACHE_KEY, JSON.stringify({when: state.when, obsWind: state.obsWind, marine: state.marine, cond: state.cond, tides: state.tides, temps: state.temps, alerts: state.alerts, sources: state.sources}));
 }
 function loadCache() {
   try {
     const c = JSON.parse(store(CACHE_KEY) || "null"); if (!c) return false;
     const when = new Date(c.when); if (Date.now() - when > CACHE_MAX_H * 36e5) return false;
-    state.when = when; state.cond = c.cond || {}; state.alerts = c.alerts || []; state.sources = c.sources || {};
+    state.when = when; state.cond = c.cond || {}; state.marine = c.marine || {};
+    state.obsWind = Object.fromEntries(Object.entries(c.obsWind || {}).map(([k, p]) => [k, {...p, t: new Date(p.t)}])); state.alerts = c.alerts || []; state.sources = c.sources || {};
     state.tides = Object.fromEntries(Object.entries(c.tides || {}).map(([k, a]) => [k, a.map(p => ({...p, t: new Date(p.t)}))]));
     state.temps = Object.fromEntries(Object.entries(c.temps || {}).map(([k, p]) => [k, {...p, t: new Date(p.t)}]));
     return true;
@@ -547,6 +581,7 @@ function cellBars(level) {
 }
 
 function renderSite(s) {
+  loadNws(s);
   const a = assess(s), c = state.cond[s.id] || {}, td = tideNow(s.tide), st = TIDE_STATIONS[s.tide] || {};
   const tempKey = s.tempStation || s.tide; const ctemp = state.temps[tempKey];
   const er = EMERGENCY.hospitals?.[s.er] || {};
@@ -574,7 +609,9 @@ function renderSite(s) {
       <div class="src">${esc(range(c.waveRange) || (c.waveModels || []).join(", "))}</div></div>
     <div class="tile"><div class="lbl">Wind</div><div class="v">${fmt(c.wind)}<small> kt</small></div>
       <div class="s">From ${compass(c.windDir)} <span class="arrow" style="transform:rotate(${(c.windDir ?? 0) + 180}deg)">↑</span> · gusts ${fmt(c.gust)} kt<br>${a.onshore ? "Onshore at this site" : "Offshore or cross-shore"}</div>
-      <div class="src">${wr.length > 1 ? `${fmt(Math.min(...wr))}–${fmt(Math.max(...wr))} kt across ${wr.length} models` : ""}</div></div>
+      <div class="src">${wr.length > 1 ? `${fmt(Math.min(...wr))}–${fmt(Math.max(...wr))} kt across ${wr.length} models` : ""}</div>
+      ${(() => { const n = state.nws[s.id]?.hrs?.[0]; return n ? `<div class="s" style="margin-top:4px">NOAA NWS forecast: <b>${fmt(n.kt)} kt ${compass(n.dir)}</b> · ${esc(n.short)}</div>` : ""; })()}
+      ${(() => { const o = state.obsWind[s.tide]; return o && Date.now() - o.t < 3 * 36e5 ? `<div class="s" style="margin-top:4px">Measured at ${esc(o.name.split(",")[0])} ${hstTime(o.t)}: <b>${fmt(o.kt)} kt ${compass(o.dir)}</b>, gusts ${fmt(o.gust)}</div><div class="src">NOAA harbor gauge, may differ from the site</div>` : ""; })()}</div>
     <div class="tile"><div class="lbl">Current (offshore)</div><div class="v">${fmt(curKt, 1)}<small> kt</small></div>
       <div class="s">Setting toward ${compass(c.curDir)} <span class="arrow" style="transform:rotate(${c.curDir ?? 0}deg)">↑</span><br>${esc(s.currentNote || "Local currents can differ near points.")}</div>
       <div class="src">Model current, ~5 mi grid</div></div>
@@ -590,6 +627,7 @@ function renderSite(s) {
   </div>
 
   ${planHTML(s)}
+  ${(() => { const z = zoneFor(s), m = state.marine[z]; if (!m?.periods?.length) return ""; return `<section class="panel"><h3>NOAA marine forecast · ${esc(MARINE_ZONES[z])}</h3>${m.periods.map(p => `<p style="margin:0 0 6px"><b>${esc(p.name)}:</b> ${esc(p.text)}</p>`).join("")}<div class="note">National Weather Service Honolulu coastal waters forecast${m.updated ? `, issued ${esc(hstDay(new Date(m.updated)))} ${esc(hstTime(new Date(m.updated)))} HST` : ""}. Covers open water, not the beach.</div></section>`; })()}
   <div class="two" style="margin-top:14px">
     <section class="panel" style="margin:0"><h3>Surf next 3 days</h3><div class="chartbox">${c.waveSeries ? spark(c.waveSeries.map(v => v == null ? null : v * M2FT), c.n, 72, "ft", "var(--chart)", 300, 70, c.times) : ""}</div><div class="note">Offshore wave height, ft (model average).</div></section>
     <section class="panel" style="margin:0"><h3>Wind next 3 days</h3><div class="chartbox">${c.windSeries ? spark(c.windSeries, c.wn, 72, "kt", "var(--flag)", 300, 70, c.wTimes) : ""}</div><div class="note">Sustained wind, knots.</div></section>

@@ -137,7 +137,7 @@ const F = [
   ["Getting there", [["drive", "Driving", "textarea", "span2"], ["parking", "Parking", "textarea", "span2"], ["fees", "Fees and hours", "text", "full"], ["amenities", "Amenities (one per line)", "list", "span2"],
     ["cell.level", "Cell signal", "select", "", ["", "strong", "good", "fair", "spotty", "none"]], ["cell.note", "Cell note", "text"], ["cell.where", "Where to get signal", "text", "span2"]]],
   ["Safety and data", [["er", "Nearest ER", "select", "", null, null, "ER"], ["erDrive", "Drive to ER", "text"], ["tide", "Tide station", "select", "", null, null, "TIDE"],
-    ["alertArea", "NWS alert area match", "text", "", null, "e.g. Kona or Kohala"], ["faces", "Shore faces (degrees, 270 = west)", "num"], ["side", "Side of island", "select", "", ["west", "east"]], ["runoff", "Murky after rain", "check"]]],
+    ["alertArea", "NWS alert area match", "text", "", null, "e.g. Kona or Kohala"], ["marineZone", "NOAA marine zone (blank = automatic)", "select", "", [["", "Automatic"], ["PHZ121", "PHZ121 · Alenuihaha Channel"], ["PHZ122", "PHZ122 · Windward Waters"], ["PHZ123", "PHZ123 · Leeward Waters"], ["PHZ124", "PHZ124 · Southeast Waters"]]], ["faces", "Shore faces (degrees, 270 = west)", "num"], ["side", "Side of island", "select", "", ["west", "east"]], ["runoff", "Murky after rain", "check"]]],
   ["County public access", [["county.district", "District", "text"], ["county.map", "County map", "text", "span2"], ["county.name", "Access name", "text"], ["county.url", "County guide link", "text", "span2"]]],
   ["Underwater sketch", [["map.note", "Sketch note", "text", "full"]]]
 ];

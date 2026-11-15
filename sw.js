@@ -2,7 +2,7 @@
    App files are served from the cache and refreshed in the background.
    Live conditions (Open-Meteo, NOAA, NWS) always go to the network; the app
    itself keeps the last good download on the device. */
-const VERSION = "dm-v4";
+const VERSION = "dm-v5";
 const SHELL = [
   "./", "index.html", "css/app.css", "js/app.js", "js/install.js", "data/sites.js",
   "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"

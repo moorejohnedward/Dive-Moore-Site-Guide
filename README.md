@@ -48,7 +48,7 @@ Site edits reach phones on their own. After changing the app's code (HTML, CSS, 
 
 ## The APIs it uses
 
-Six free public APIs, no keys. Every call is an HTTP **GET** with the settings in the query string, and every answer is **JSON**.
+Free public APIs, no keys. Every call is an HTTP **GET** with the settings in the query string, and every answer is **JSON**.
 
 | # | What the app shows | API | Endpoint |
 |---|---|---|---|
@@ -58,8 +58,13 @@ Six free public APIs, no keys. Every call is an HTTP **GET** with the settings i
 | 4 | High and low tides | NOAA CO-OPS | `api.tidesandcurrents.noaa.gov/api/prod/datagetter` |
 | 5 | Water temp at the gauge | NOAA CO-OPS | same endpoint, `product=water_temperature` |
 | 6 | Watches and warnings | National Weather Service | `api.weather.gov/alerts/active` |
+| 7 | Measured wind at the harbor | NOAA CO-OPS | same as 4, `product=wind` |
+| 8 | Official marine forecast | NOAA NWS | `api.weather.gov/zones/coastal/PHZ123/forecast` |
+| 9 | NWS hourly wind for one site | NOAA NWS | `api.weather.gov/points/{lat},{lon}` → its `forecastHourly` link |
 
-Tide stations: Kawaihae `1617433` (west side), Hilo `1617760` (east side).
+Tide stations: Kawaihae `1617433` (west side), Hilo `1617760` (east side). Marine zones: PHZ121 Alenuihaha Channel, PHZ122 Big Island Windward Waters, PHZ123 Big Island Leeward Waters, PHZ124 Big Island Southeast Waters.
+
+NOAA's NDBC buoys aren't used yet: ndbc.noaa.gov doesn't allow browser apps to read its files (no CORS), so buoy data would need a small server in between.
 
 ### Try them in Hoppscotch
 
