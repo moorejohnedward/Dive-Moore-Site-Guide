@@ -1,0 +1,364 @@
+[
+  {
+    "v": 1,
+    "name": "Dive Moore Conditions APIs",
+    "folders": [],
+    "requests": [
+      {
+        "v": "1",
+        "name": "1 · Waves and swell (Open-Meteo Marine)",
+        "method": "GET",
+        "endpoint": "https://marine-api.open-meteo.com/v1/marine",
+        "params": [
+          {
+            "key": "latitude",
+            "value": "19.4207",
+            "active": true,
+            "description": "Two Step, moved 1.1 mi offshore so the model sees ocean"
+          },
+          {
+            "key": "longitude",
+            "value": "-155.9328",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "timezone",
+            "value": "Pacific/Honolulu",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "forecast_days",
+            "value": "4",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "hourly",
+            "value": "wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,swell_wave_period,wind_wave_height",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "models",
+            "value": "ecmwf_wam025,ncep_gfswave025,meteofrance_wave,dwd_gwam",
+            "active": true,
+            "description": "4 models; the app averages them and shows where they disagree"
+          },
+          {
+            "key": "length_unit",
+            "value": "imperial",
+            "active": true,
+            "description": "Not in the app (it converts meters itself). Turn off to compare."
+          }
+        ],
+        "headers": [],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\npw.test(\"Has hourly data\", () => {\n  pw.expect(pw.response.body.hourly !== undefined).toBe(true);\n});\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      },
+      {
+        "v": "1",
+        "name": "2 · Water temp and current (Open-Meteo Marine)",
+        "method": "GET",
+        "endpoint": "https://marine-api.open-meteo.com/v1/marine",
+        "params": [
+          {
+            "key": "latitude",
+            "value": "19.4207",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "longitude",
+            "value": "-155.9328",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "timezone",
+            "value": "Pacific/Honolulu",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "forecast_days",
+            "value": "4",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "hourly",
+            "value": "sea_surface_temperature,ocean_current_velocity,ocean_current_direction",
+            "active": true,
+            "description": ""
+          }
+        ],
+        "headers": [],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\npw.test(\"Has sea surface temp\", () => {\n  pw.expect(pw.response.body.hourly.sea_surface_temperature.length > 0).toBe(true);\n});\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      },
+      {
+        "v": "1",
+        "name": "3 · Wind, gusts and rain (Open-Meteo Forecast)",
+        "method": "GET",
+        "endpoint": "https://api.open-meteo.com/v1/forecast",
+        "params": [
+          {
+            "key": "latitude",
+            "value": "19.4223",
+            "active": true,
+            "description": "Two Step shore point (wind uses the real site, not the offshore point)"
+          },
+          {
+            "key": "longitude",
+            "value": "-155.9138",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "timezone",
+            "value": "Pacific/Honolulu",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "forecast_days",
+            "value": "4",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "past_days",
+            "value": "2",
+            "active": true,
+            "description": "2 days back: rain runoff hurts visibility"
+          },
+          {
+            "key": "wind_speed_unit",
+            "value": "kn",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "hourly",
+            "value": "wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "models",
+            "value": "gfs_seamless,ecmwf_ifs025,icon_seamless",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "precipitation_unit",
+            "value": "inch",
+            "active": true,
+            "description": "Not in the app; added for imperial output"
+          }
+        ],
+        "headers": [],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      },
+      {
+        "v": "1",
+        "name": "4 · Tides high/low (NOAA CO-OPS, Kawaihae)",
+        "method": "GET",
+        "endpoint": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
+        "params": [
+          {
+            "key": "station",
+            "value": "1617433",
+            "active": true,
+            "description": "Kawaihae. Hilo is 1617760."
+          },
+          {
+            "key": "product",
+            "value": "predictions",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "datum",
+            "value": "MLLW",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "units",
+            "value": "english",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "time_zone",
+            "value": "lst_ldt",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "format",
+            "value": "json",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "interval",
+            "value": "hilo",
+            "active": true,
+            "description": "High and low only"
+          },
+          {
+            "key": "date",
+            "value": "today",
+            "active": true,
+            "description": "The app sends begin_date/end_date (yesterday to 2 days out) as yyyyMMdd instead"
+          },
+          {
+            "key": "application",
+            "value": "DiveMoore",
+            "active": true,
+            "description": "Tells NOAA who is calling; no API key needed"
+          }
+        ],
+        "headers": [],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\npw.test(\"NOAA did not return an error\", () => {\n  // NOAA answers bad requests with 200 + {\"error\": ...}, so check the body too\n  pw.expect(pw.response.body.error === undefined).toBe(true);\n});\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      },
+      {
+        "v": "1",
+        "name": "5 · Water temp at the gauge (NOAA CO-OPS, Kawaihae)",
+        "method": "GET",
+        "endpoint": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
+        "params": [
+          {
+            "key": "station",
+            "value": "1617433",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "product",
+            "value": "water_temperature",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "date",
+            "value": "latest",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "units",
+            "value": "english",
+            "active": true,
+            "description": "°F"
+          },
+          {
+            "key": "time_zone",
+            "value": "lst_ldt",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "format",
+            "value": "json",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "application",
+            "value": "DiveMoore",
+            "active": true,
+            "description": ""
+          }
+        ],
+        "headers": [],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\npw.test(\"NOAA did not return an error\", () => {\n  pw.expect(pw.response.body.error === undefined).toBe(true);\n});\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      },
+      {
+        "v": "1",
+        "name": "6 · Active alerts for Hawaii (National Weather Service)",
+        "method": "GET",
+        "endpoint": "https://api.weather.gov/alerts/active",
+        "params": [
+          {
+            "key": "area",
+            "value": "HI",
+            "active": true,
+            "description": ""
+          }
+        ],
+        "headers": [
+          {
+            "key": "Accept",
+            "value": "application/geo+json",
+            "active": true,
+            "description": ""
+          },
+          {
+            "key": "User-Agent",
+            "value": "DiveMoore Conditions (divemoore.com)",
+            "active": true,
+            "description": "NWS asks every caller to identify itself"
+          }
+        ],
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "pw.test(\"Status is 200\", () => {\n  pw.expect(pw.response.status).toBe(200);\n});\npw.test(\"Returns a feature list\", () => {\n  pw.expect(Array.isArray(pw.response.body.features)).toBe(true);\n});\n",
+        "body": {
+          "contentType": null,
+          "body": null
+        }
+      }
+    ]
+  }
+]
