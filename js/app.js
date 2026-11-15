@@ -42,9 +42,18 @@ function hourIndex(times) {
   const i = times.findIndex(t => t.startsWith(key)); return i < 0 ? 0 : i;
 }
 
+/* Sites within ~2.5 mi share one forecast point. The models' grids are coarser than that,
+   and fewer points keep each request inside Open-Meteo's free-use limits. */
+function gridPoints(pts, step = 0.04) {
+  const key = p => Math.round(p[0] / step) + "," + Math.round(p[1] / step);
+  const uniq = [], at = {}, idx = pts.map(p => { const k = key(p); if (!(k in at)) { at[k] = uniq.length; uniq.push(p); } return at[k]; });
+  return {uniq, idx};
+}
+const coordQS = pts => `latitude=${pts.map(p => (+p[0]).toFixed(3)).join(",")}&longitude=${pts.map(p => (+p[1]).toFixed(3)).join(",")}`;
+
 async function loadWaves() {
-  const pts = SITES.map(seaPoint);
-  const base = `latitude=${pts.map(p => p[0]).join(",")}&longitude=${pts.map(p => p[1]).join(",")}&timezone=Pacific%2FHonolulu&forecast_days=4`;
+  const g = gridPoints(SITES.map(seaPoint));
+  const base = `${coordQS(g.uniq)}&timezone=Pacific%2FHonolulu&forecast_days=4`;
   const waveVars = "wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,swell_wave_period,wind_wave_height";
   const [w, oc] = await Promise.all([
     getJSON(`https://marine-api.open-meteo.com/v1/marine?${base}&hourly=${waveVars}&models=${WAVE_MODELS.join(",")}`),
@@ -52,7 +61,7 @@ async function loadWaves() {
   ]);
   const W = Array.isArray(w) ? w : [w], O = Array.isArray(oc) ? oc : [oc];
   SITES.forEach((s, i) => {
-    const h = W[i].hourly, o = O[i].hourly, n = hourIndex(h.time);
+    const h = W[g.idx[i]].hourly, o = O[g.idx[i]].hourly, n = hourIndex(h.time);
     const pick = (v, m) => h[`${v}_${m}`] || h[v];
     const per = WAVE_MODELS.map(m => ({m, sw: pick("swell_wave_height", m), sd: pick("swell_wave_direction", m), sp: pick("swell_wave_period", m), wh: pick("wave_height", m), ww: pick("wind_wave_height", m)})).filter(x => x.wh && x.wh[n] != null);
     const series = h.time.map((t, k) => avg(per.map(x => x.wh[k])));
@@ -76,13 +85,20 @@ async function loadWaves() {
 }
 
 async function loadWind() {
-  const base = `latitude=${SITES.map(s => s.lat).join(",")}&longitude=${SITES.map(s => s.lon).join(",")}&timezone=Pacific%2FHonolulu&forecast_days=4&past_days=2&wind_speed_unit=kn`;
-  const r = await getJSON(`https://api.open-meteo.com/v1/forecast?${base}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation&models=${WIND_MODELS.join(",")}`);
+  const g = gridPoints(SITES.map(s => [s.lat, s.lon]));
+  const base = `${coordQS(g.uniq)}&timezone=Pacific%2FHonolulu&forecast_days=4&past_days=2&wind_speed_unit=kn`;
+  const vars = "hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation";
+  let r, models = WIND_MODELS;
+  try { r = await getJSON(`https://api.open-meteo.com/v1/forecast?${base}&${vars}&models=${models.join(",")}`); }
+  catch (e) { // busy or over the limit: try once more with a single model
+    await new Promise(ok => setTimeout(ok, 2000)); models = ["gfs_seamless"];
+    r = await getJSON(`https://api.open-meteo.com/v1/forecast?${base}&${vars}&models=gfs_seamless`);
+  }
   const R = Array.isArray(r) ? r : [r];
   SITES.forEach((s, i) => {
-    const h = R[i].hourly, n = hourIndex(h.time);
+    const h = R[g.idx[i]].hourly, n = hourIndex(h.time);
     const pick = (v, m) => h[`${v}_${m}`] || h[v];
-    const per = WIND_MODELS.map(m => ({m, ws: pick("wind_speed_10m", m), wd: pick("wind_direction_10m", m), wg: pick("wind_gusts_10m", m), pr: pick("precipitation", m)})).filter(x => x.ws && x.ws[n] != null);
+    const per = models.map(m => ({m, ws: pick("wind_speed_10m", m), wd: pick("wind_direction_10m", m), wg: pick("wind_gusts_10m", m), pr: pick("precipitation", m)})).filter(x => x.ws && x.ws[n] != null);
     const c = state.cond[s.id] = state.cond[s.id] || {};
     let rain48 = 0; for (let k = Math.max(0, n - 48); k < n; k++) rain48 += avg(per.map(x => x.pr?.[k])) || 0;
     Object.assign(c, {
@@ -93,7 +109,7 @@ async function loadWind() {
       rain48, windModels: per.map(x => WIND_MODEL_NAMES[x.m])
     });
   });
-  state.sources.wind = "Open-Meteo Forecast (" + Object.values(WIND_MODEL_NAMES).join(", ") + ")";
+  state.sources.wind = "Open-Meteo Forecast (" + models.map(m => WIND_MODEL_NAMES[m]).join(", ") + ")";
 }
 
 async function loadTides() {
