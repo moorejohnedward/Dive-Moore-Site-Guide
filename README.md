@@ -1,6 +1,6 @@
 # Dive Moore Conditions
 
-A phone app for 87 Big Island dive sites (shore and boat). For each site it shows waves, swell, wind, tide, water temperature, current and weather alerts, and gives a Good / Caution / No-go call. It also has entry difficulty for today, a flying-after-diving planner, and site details: entry, exit, route, hazards, parking and emergency contacts.
+A phone app for 86 Big Island dive sites (shore and boat). For each site it shows waves, swell, wind, tide, water temperature, current and weather alerts, and gives a Good / Caution / No-go call. It also has entry difficulty for today, a flying-after-diving planner, and site details: entry, exit, route, hazards, parking and emergency contacts.
 
 - **App:** https://moorejohnedward.github.io/Dive-Moore-Site-Guide/ (once GitHub Pages is on)
 - **Code:** https://github.com/moorejohnedward/Dive-Moore-Site-Guide
@@ -10,7 +10,7 @@ A phone app for 87 Big Island dive sites (shore and boat). For each site it show
 - **Installs on a phone.** Open the link and use "Add to Home Screen" (iPhone) or the **Install app** button (Android, Chrome, Edge). It opens full screen with its own icon.
 - **Works with no signal.** A service worker (`sw.js`) keeps the app on the device. The last conditions download is saved for 36 hours, so at the dive site you still see what it said before you lost signal, clearly marked as offline.
 - **Never shows made-up conditions.** If the feeds can't be reached and there's no recent download, it says so. Example data only appears in test mode (`?demo=1` at the end of the address).
-- **County public access.** 28 sites are on the County of Hawaiʻi shoreline public access list and carry a **Public access** tag and filter. 13 of them were added from that list and are tagged **New** until they're checked in person. See `data/COUNTY-ACCESS.md`.
+- **County public access.** 27 sites are on the County of Hawaiʻi shoreline public access list and carry a **Public access** tag and filter. 12 of them were added from that list and are tagged **New** until they're checked in person. See `data/COUNTY-ACCESS.md`.
 
 ## Files
 

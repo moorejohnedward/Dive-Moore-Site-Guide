@@ -13,7 +13,6 @@ These show a **New** tag and a "scout it before you dive it" notice until the en
 |---|---|---|
 | ʻAlula Beach (Honokōhau shore) | North Kona · Map 2 | Shore-dive reviews ("Alua Beach"); listed as a snorkel and scuba beach |
 | Kikaʻua Point Park (Kūkiʻo) | North Kona · Map 1 | Sheltered lagoon snorkel; calm-day reef outside the point |
-| Magic Sands (Laʻaloa Beach Park) | North Kona · Map 5 | Rocky cove south of the point used for scuba; dive shop shore-site list |
 | Keauhou Bay (shore) | North Kona · Map 6 | Dive shop shore-site list |
 | Manini Beach (Kealakekua Bay south) | South Kona · Map 2 | Dive shop shore-site list |
 | Miloliʻi Beach Park | South Kona · Map 4 | Big Island dive map (6–65 ft) |
@@ -24,6 +23,10 @@ These show a **New** tag and a "scout it before you dive it" notice until the en
 | Lapakahi (Koaiʻe Cove) | North Kohala | Lapakahi MLCD (state DAR) |
 | Carlsmith Beach Park (Four Mile) | South Hilo · Map 7 | Lagoon snorkel and training |
 | Pohoiki (Isaac Hale Beach Park) | Puna · Map 2 | Long rated best shore dive in East Hawaiʻi; shoreline changed in 2018 |
+
+## Checked and left out
+
+- **Magic Sands (Laʻaloa Beach Park):** county access, but local divers don't dive it; they use Mile Marker 4 just south.
 
 ## Existing sites that sit on a county access
 
